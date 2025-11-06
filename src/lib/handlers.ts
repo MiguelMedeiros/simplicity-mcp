@@ -8,11 +8,11 @@ import {
   TextContent,
 } from '@modelcontextprotocol/sdk/types.js';
 import { ElementsClient } from './elements-client.js';
-import { 
-  SimplicityTools, 
-  extractTransaction, 
-  checkToolsInstallation, 
-  autoInstallTools 
+import {
+  SimplicityTools,
+  extractTransaction,
+  checkToolsInstallation,
+  autoInstallTools,
 } from './simplicity-tools.js';
 import { FaucetClient, isValidLiquidAddress } from './faucet-client.js';
 import { readFile } from 'fs/promises';
@@ -164,7 +164,7 @@ export function createHandlers(
   // Initialize tools
   const simplicityTools = new SimplicityTools();
   const faucetClient = new FaucetClient();
-  
+
   return {
     // Simplicity tools
     simplicity_encode: ({ program, format = 'hex' }: EncodeArgs) => {
@@ -442,9 +442,9 @@ export function createHandlers(
 
       // Validate syntax before compiling
       const validation = simplicityTools.validateSyntax(source);
-      
+
       const result = await simplicityTools.compileFile(file_path);
-      
+
       // Add helpful suggestions if compilation failed
       if (!result.success && result.error) {
         const suggestions = simplicityTools.suggestFix(result.error);
@@ -455,7 +455,7 @@ export function createHandlers(
           tip: 'Use simplicity_get_features to see what simc supports',
         });
       }
-      
+
       return createTextResponse({
         ...result,
         validation_warnings: validation.warnings,
@@ -465,7 +465,7 @@ export function createHandlers(
     simplicity_compile_source: async ({ source }: CompileSourceArgs) => {
       // Validate syntax before compiling
       const validation = simplicityTools.validateSyntax(source);
-      
+
       // Return early if there are validation errors
       if (!validation.valid) {
         return createTextResponse({
@@ -475,9 +475,9 @@ export function createHandlers(
           tip: 'Fix validation errors before compiling. Use simplicity_generate_example for working patterns.',
         });
       }
-      
+
       const result = await simplicityTools.compileSource(source);
-      
+
       // Add helpful suggestions if compilation failed
       if (!result.success && result.error) {
         const suggestions = simplicityTools.suggestFix(result.error);
@@ -488,7 +488,7 @@ export function createHandlers(
           tip: 'Use simplicity_get_features to see what simc supports',
         });
       }
-      
+
       return createTextResponse({
         ...result,
         validation_warnings: validation.warnings,
@@ -527,7 +527,10 @@ export function createHandlers(
     },
 
     // Faucet tools
-    faucet_request_funds: async ({ address, asset = 'lbtc' }: FaucetRequestArgs) => {
+    faucet_request_funds: async ({
+      address,
+      asset = 'lbtc',
+    }: FaucetRequestArgs) => {
       if (!isValidLiquidAddress(address)) {
         return createTextResponse({
           success: false,
@@ -549,7 +552,10 @@ export function createHandlers(
     },
 
     // Contract workflow tools
-    contract_deploy: async ({ contract_file, auto_fund = false }: ContractDeployArgs) => {
+    contract_deploy: async ({
+      contract_file,
+      auto_fund = false,
+    }: ContractDeployArgs) => {
       // Step 1: Compile contract
       const compileResult = await simplicityTools.compileFile(contract_file);
 
@@ -692,7 +698,8 @@ export function createHandlers(
         },
         {
           name: 'timelock',
-          description: 'Simple timelock - locks funds until specific block height',
+          description:
+            'Simple timelock - locks funds until specific block height',
           path: 'examples/contracts/timelock.simf',
           witness: 'examples/witnesses/timelock.wit',
         },

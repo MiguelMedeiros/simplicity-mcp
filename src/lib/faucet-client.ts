@@ -162,5 +162,3 @@ export function isValidLiquidAddress(address: string): boolean {
 
   return true;
 }
-
-

@@ -111,7 +111,10 @@ export class ElementsClient {
     return await this.call<string[]>('generatetoaddress', [nblocks, address]);
   }
 
-  async getBalance(account?: string, minconf?: number): Promise<Record<string, number>> {
+  async getBalance(
+    account?: string,
+    minconf?: number
+  ): Promise<Record<string, number>> {
     const params = account !== undefined ? [account, minconf || 1] : [];
     return await this.call<Record<string, number>>('getbalance', params);
   }

@@ -132,4 +132,3 @@ describe('isValidBase64Program', () => {
     expect(isValidBase64Program('JA=')).toBe(false); // Wrong padding
   });
 });
-

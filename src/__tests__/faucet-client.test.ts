@@ -135,4 +135,3 @@ describe('isValidLiquidAddress', () => {
     expect(isValidLiquidAddress(123 as any)).toBe(false);
   });
 });
-
