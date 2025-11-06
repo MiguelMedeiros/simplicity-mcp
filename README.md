@@ -1,7 +1,8 @@
 # Simplicity MCP Server
 
-[![CI](https://github.com/USERNAME/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/MiguelMedeiros/simplicity-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/MiguelMedeiros/simplicity-mcp/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/MiguelMedeiros/simplicity-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Model Context Protocol (MCP) server for working with Simplicity programs and Elements blockchain.
@@ -9,7 +10,7 @@ A Model Context Protocol (MCP) server for working with Simplicity programs and E
 ## ⚡ Quick Install
 
 ```bash
-git clone <repo-url> && cd simplicity-mcp && npm install && npm run setup
+git clone https://github.com/MiguelMedeiros/simplicity-mcp.git && cd simplicity-mcp && npm install && npm run setup
 ```
 
 Then restart Cursor and start chatting with Elements blockchain!
