@@ -34,12 +34,12 @@ export class FaucetClient {
       });
 
       // Check if response contains txid
-      const html = response.data;
+      const html = response.data as string;
 
       // Look for transaction ID in response
       const txidMatch = html.match(/[a-f0-9]{64}/);
 
-      if (txidMatch) {
+      if (txidMatch && txidMatch[0]) {
         return {
           success: true,
           txid: txidMatch[0],

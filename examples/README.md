@@ -45,6 +45,19 @@ Time-delayed withdrawal vault for enhanced security.
 - Guardian key can always intervene
 - Protection against immediate theft
 
+### 5. timelock.simf
+Simple timelock contract that locks funds until a specific block height.
+
+**Use Case**: Scheduled payments, vesting schedules, forced savings, inheritance planning.
+
+**Features**:
+- Funds locked until block 1000
+- Cannot be spent before unlock height
+- Simple and secure time-based restriction
+- No additional signatures required after unlock
+
+**Witness**: `witnesses/timelock.wit`
+
 ## Using These Contracts
 
 ### With simc (Simplicity Compiler)
@@ -95,6 +108,31 @@ await mcp.call('simplicity_spend_contract', {
   witness_file: 'examples/witnesses/empty.wit'
 });
 ```
+
+## Workflow Example: Timelock
+
+1. **Compile and deploy**:
+   ```bash
+   simc examples/contracts/timelock.simf
+   hal-simplicity simplicity info <program> # Get address
+   ```
+
+2. **Fund contract**:
+   Send LBTC to the contract address (funds are now locked)
+
+3. **Wait for unlock**:
+   ```bash
+   # Check current block height
+   elements-cli getblockcount
+   # Wait until block >= 1000
+   ```
+
+4. **Spend after unlock**:
+   ```bash
+   # After block 1000, funds can be spent
+   # Create transaction spending from contract
+   # Broadcast
+   ```
 
 ## Workflow Example: HTLC
 

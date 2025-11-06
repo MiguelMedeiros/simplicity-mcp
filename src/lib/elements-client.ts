@@ -105,4 +105,50 @@ export class ElementsClient {
   async getPeginAddress(): Promise<unknown> {
     return await this.call('getpeginaddress');
   }
+
+  // Utility methods for development and testing
+  async generateToAddress(nblocks: number, address: string): Promise<string[]> {
+    return await this.call<string[]>('generatetoaddress', [nblocks, address]);
+  }
+
+  async getBalance(account?: string, minconf?: number): Promise<Record<string, number>> {
+    const params = account !== undefined ? [account, minconf || 1] : [];
+    return await this.call<Record<string, number>>('getbalance', params);
+  }
+
+  async getNewAddress(label?: string): Promise<string> {
+    return await this.call<string>('getnewaddress', label ? [label] : []);
+  }
+
+  async sendToAddress(
+    address: string,
+    amount: number,
+    comment?: string,
+    commentTo?: string
+  ): Promise<string> {
+    const params = [address, amount];
+    if (comment) params.push(comment);
+    if (commentTo) params.push(commentTo);
+    return await this.call<string>('sendtoaddress', params);
+  }
+
+  async getBlockCount(): Promise<number> {
+    return await this.call<number>('getblockcount');
+  }
+
+  async getBlockHash(height: number): Promise<string> {
+    return await this.call<string>('getblockhash', [height]);
+  }
+
+  async listTransactions(
+    account?: string,
+    count?: number,
+    skip?: number
+  ): Promise<unknown[]> {
+    const params = [];
+    if (account !== undefined) params.push(account);
+    if (count !== undefined) params.push(count);
+    if (skip !== undefined) params.push(skip);
+    return await this.call<unknown[]>('listtransactions', params);
+  }
 }

@@ -6,15 +6,15 @@ import { describe, it, expect } from 'vitest';
 import { tools } from '../lib/tools.js';
 
 describe('Tools', () => {
-  it('should export 33 tools', () => {
-    expect(tools).toHaveLength(33);
+  it('should export 45 tools', () => {
+    expect(tools).toHaveLength(45);
   });
 
   it('should have all Simplicity tools', () => {
     const simplicityTools = tools.filter((t) =>
       t.name.startsWith('simplicity_')
     );
-    expect(simplicityTools).toHaveLength(12);
+    expect(simplicityTools).toHaveLength(17);
 
     const names = simplicityTools.map((t) => t.name);
     expect(names).toContain('simplicity_encode');
@@ -23,11 +23,15 @@ describe('Tools', () => {
     expect(names).toContain('simplicity_construct');
     expect(names).toContain('simplicity_analyze');
     expect(names).toContain('simplicity_finalize');
+    expect(names).toContain('simplicity_compile_file');
+    expect(names).toContain('simplicity_compile_source');
+    expect(names).toContain('simplicity_get_features');
+    expect(names).toContain('simplicity_validate_syntax');
   });
 
   it('should have all Elements tools', () => {
     const elementsTools = tools.filter((t) => t.name.startsWith('elements_'));
-    expect(elementsTools).toHaveLength(9);
+    expect(elementsTools).toHaveLength(16);
 
     const names = elementsTools.map((t) => t.name);
     expect(names).toContain('elements_get_blockchain_info');
@@ -39,14 +43,22 @@ describe('Tools', () => {
     expect(names).toContain('elements_get_asset_info');
     expect(names).toContain('elements_list_issuances');
     expect(names).toContain('elements_get_pegin_address');
+    expect(names).toContain('elements_generate_blocks');
+    expect(names).toContain('elements_get_balance');
+    expect(names).toContain('elements_get_new_address');
+    expect(names).toContain('elements_get_block_count');
   });
 
   it('should have all Integration tools', () => {
     const integrationTools = tools.filter(
       (t) =>
-        !t.name.startsWith('simplicity_') && !t.name.startsWith('elements_')
+        !t.name.startsWith('simplicity_') &&
+        !t.name.startsWith('elements_') &&
+        !t.name.startsWith('faucet_') &&
+        !t.name.startsWith('contract_') &&
+        !t.name.startsWith('helper_')
     );
-    expect(integrationTools).toHaveLength(12);
+    expect(integrationTools).toHaveLength(4);
 
     const names = integrationTools.map((t) => t.name);
     expect(names).toContain('decode_simplicity_transaction');

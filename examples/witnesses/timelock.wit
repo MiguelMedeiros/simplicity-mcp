@@ -1,0 +1,6 @@
+{
+  "unlock_height": 1000,
+  "current_height": 1001,
+  "note": "current_height must be >= unlock_height to spend"
+}
+

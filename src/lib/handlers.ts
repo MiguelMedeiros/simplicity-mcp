@@ -289,6 +289,95 @@ export function createHandlers(
       return createTextResponse(address);
     },
 
+    // Utility handlers for development and testing
+    elements_generate_blocks: async ({
+      nblocks,
+      address,
+    }: {
+      nblocks: number;
+      address: string;
+    }) => {
+      const blockHashes = await elementsClient.generateToAddress(
+        nblocks,
+        address
+      );
+      return createTextResponse({
+        blocks_generated: nblocks,
+        address,
+        block_hashes: blockHashes,
+      });
+    },
+
+    elements_get_balance: async ({
+      account,
+      minconf,
+    }: {
+      account?: string;
+      minconf?: number;
+    }) => {
+      const balance = await elementsClient.getBalance(account, minconf);
+      return createTextResponse(balance);
+    },
+
+    elements_get_new_address: async ({ label }: { label?: string }) => {
+      const address = await elementsClient.getNewAddress(label);
+      return createTextResponse({ address, label: label || '' });
+    },
+
+    elements_send_to_address: async ({
+      address,
+      amount,
+      comment,
+      comment_to,
+    }: {
+      address: string;
+      amount: number;
+      comment?: string;
+      comment_to?: string;
+    }) => {
+      const txid = await elementsClient.sendToAddress(
+        address,
+        amount,
+        comment,
+        comment_to
+      );
+      return createTextResponse({
+        txid,
+        address,
+        amount,
+      });
+    },
+
+    elements_get_block_count: async () => {
+      const height = await elementsClient.getBlockCount();
+      return createTextResponse({ block_height: height });
+    },
+
+    elements_get_block_hash: async ({ height }: { height: number }) => {
+      const hash = await elementsClient.getBlockHash(height);
+      return createTextResponse({ height, block_hash: hash });
+    },
+
+    elements_list_transactions: async ({
+      account,
+      count,
+      skip,
+    }: {
+      account?: string;
+      count?: number;
+      skip?: number;
+    }) => {
+      const transactions = await elementsClient.listTransactions(
+        account,
+        count || 10,
+        skip
+      );
+      return createTextResponse({
+        transactions,
+        count: transactions.length,
+      });
+    },
+
     // Integration tools
     decode_simplicity_transaction: async ({
       txid,
@@ -472,7 +561,7 @@ export function createHandlers(
         });
       }
 
-      const program = compileResult.program!;
+      const program = compileResult.program || '';
 
       // Step 2: Get address
       const addressInfo = await simplicityTools.getProgramInfo(program);
@@ -525,7 +614,7 @@ export function createHandlers(
 
       try {
         const witnessContent = await readFile(witness_file, 'utf-8');
-        const witness = JSON.parse(witnessContent);
+        const witness = JSON.parse(witnessContent) as Record<string, unknown>;
 
         return createTextResponse({
           success: true,
@@ -601,12 +690,20 @@ export function createHandlers(
           path: 'examples/contracts/vault.simf',
           witness: 'examples/witnesses/vault.wit (not included)',
         },
+        {
+          name: 'timelock',
+          description: 'Simple timelock - locks funds until specific block height',
+          path: 'examples/contracts/timelock.simf',
+          witness: 'examples/witnesses/timelock.wit',
+        },
       ];
 
-      return createTextResponse({
-        examples,
-        total: examples.length,
-      });
+      return Promise.resolve(
+        createTextResponse({
+          examples,
+          total: examples.length,
+        })
+      );
     },
 
     helper_get_example_contract: async ({ name }: GetExampleContractArgs) => {

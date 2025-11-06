@@ -183,6 +183,121 @@ export const tools: Tool[] = [
     description: 'Get a pegin address',
     inputSchema: { type: 'object', properties: {} },
   },
+  // Utility tools for development and testing
+  {
+    name: 'elements_generate_blocks',
+    description: 'Generate blocks to a specific address (regtest/testnet only)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        nblocks: {
+          type: 'number',
+          description: 'Number of blocks to generate',
+        },
+        address: {
+          type: 'string',
+          description: 'Address to receive block rewards',
+        },
+      },
+      required: ['nblocks', 'address'],
+    },
+  },
+  {
+    name: 'elements_get_balance',
+    description: 'Get wallet balance',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account: {
+          type: 'string',
+          description: 'Account name (optional)',
+        },
+        minconf: {
+          type: 'number',
+          description: 'Minimum confirmations (default: 1)',
+        },
+      },
+    },
+  },
+  {
+    name: 'elements_get_new_address',
+    description: 'Generate a new address',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        label: {
+          type: 'string',
+          description: 'Label for the address (optional)',
+        },
+      },
+    },
+  },
+  {
+    name: 'elements_send_to_address',
+    description: 'Send amount to a given address',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'string',
+          description: 'Destination address',
+        },
+        amount: {
+          type: 'number',
+          description: 'Amount to send',
+        },
+        comment: {
+          type: 'string',
+          description: 'Optional comment',
+        },
+        comment_to: {
+          type: 'string',
+          description: 'Optional comment for recipient',
+        },
+      },
+      required: ['address', 'amount'],
+    },
+  },
+  {
+    name: 'elements_get_block_count',
+    description: 'Get the current block height',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'elements_get_block_hash',
+    description: 'Get block hash by height',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        height: {
+          type: 'number',
+          description: 'Block height',
+        },
+      },
+      required: ['height'],
+    },
+  },
+  {
+    name: 'elements_list_transactions',
+    description: 'List recent transactions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account: {
+          type: 'string',
+          description: 'Account name (optional)',
+        },
+        count: {
+          type: 'number',
+          description: 'Number of transactions to return (default: 10)',
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of transactions to skip',
+        },
+      },
+    },
+  },
   // Integration tools
   {
     name: 'decode_simplicity_transaction',

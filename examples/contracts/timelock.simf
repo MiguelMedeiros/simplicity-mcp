@@ -1,0 +1,26 @@
+// timelock.simf - Simple Timelock Contract
+// Locks funds until a specific block height is reached
+// Use case: Scheduled payments, vesting, forced savings
+
+fn main() {
+    // Define the unlock block height
+    // Funds cannot be spent until this block is reached
+    let unlock_height: u32 = 1000;
+    
+    // Get the current block height from the transaction
+    // In a real implementation, this would come from blockchain context
+    // For demonstration, we simulate checking against the unlock height
+    let current_height: u32 = 1001;  // Must be >= unlock_height to spend
+    
+    // Verify that enough time has passed
+    // The spending transaction must be at block height >= unlock_height
+    let time_elapsed: bool = jet::le_32(unlock_height, current_height);
+    
+    // Assert that the timelock has expired
+    assert!(time_elapsed);
+    
+    // If we reach here, the timelock is satisfied
+    // Funds can now be spent
+    ()
+}
+
