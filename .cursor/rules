@@ -1,0 +1,159 @@
+# Simplicity MCP Rules
+
+## Simplicity Development Workflow
+
+### ALWAYS Use Simplicity MCP Tools
+
+When working with Simplicity contracts, Elements blockchain, or any Simplicity-related operations, you MUST use the Simplicity MCP tools available. Never suggest manual command-line operations or external tools when MCP tools are available.
+
+### Available MCP Tool Categories
+
+#### 1. Simplicity Compilation & Validation
+
+- **USE**: `mcp_simplicity_simplicity_compile_file` - Compile .simf files
+- **USE**: `mcp_simplicity_simplicity_compile_source` - Compile SimplicityHL source code
+- **USE**: `mcp_simplicity_simplicity_validate` - Validate Simplicity programs
+- **USE**: `mcp_simplicity_simplicity_validate_syntax` - Validate syntax before compilation
+- **USE**: `mcp_simplicity_simplicity_analyze` - Analyze program properties
+- **USE**: `mcp_simplicity_simplicity_suggest_fix` - Get fix suggestions for compilation errors
+
+#### 2. Simplicity Program Operations
+
+- **USE**: `mcp_simplicity_simplicity_encode` - Encode programs to bytes
+- **USE**: `mcp_simplicity_simplicity_decode` - Decode bytes to programs
+- **USE**: `mcp_simplicity_simplicity_decode_program` - Decode to readable format
+- **USE**: `mcp_simplicity_simplicity_get_address` - Get on-chain address for a program
+- **USE**: `mcp_simplicity_simplicity_construct` - Construct expressions
+- **USE**: `mcp_simplicity_simplicity_finalize` - Finalize ConstructNode to CommitNode
+
+#### 3. Elements Blockchain Operations
+
+- **USE**: `mcp_simplicity_elements_get_blockchain_info` - Get blockchain information
+- **USE**: `mcp_simplicity_elements_get_block` - Get block by hash or height
+- **USE**: `mcp_simplicity_elements_get_transaction` - Get transaction details
+- **USE**: `mcp_simplicity_elements_decode_rawtransaction` - Decode raw transactions
+- **USE**: `mcp_simplicity_elements_get_address_info` - Get address information
+- **USE**: `mcp_simplicity_elements_list_unspent` - List UTXOs
+- **USE**: `mcp_simplicity_elements_get_asset_info` - Get asset information
+- **USE**: `mcp_simplicity_elements_list_issuances` - List asset issuances
+- **USE**: `mcp_simplicity_elements_get_pegin_address` - Get pegin address
+
+#### 4. Simplicity Transaction Analysis
+
+- **USE**: `mcp_simplicity_decode_simplicity_transaction` - Extract and decode Simplicity programs from transactions
+- **USE**: `mcp_simplicity_verify_simplicity_script` - Verify Simplicity scripts with witness
+- **USE**: `mcp_simplicity_estimate_simplicity_cost` - Estimate execution cost
+- **USE**: `mcp_simplicity_analyze_simplicity_in_block` - Analyze Simplicity usage in blocks
+
+#### 5. Contract Development & Deployment
+
+- **USE**: `mcp_simplicity_contract_deploy` - Complete deploy workflow (compile, get address, fund)
+- **USE**: `mcp_simplicity_contract_spend` - Spend funds from Simplicity contracts
+- **USE**: `mcp_simplicity_simplicity_create_witness` - Create witness templates
+- **USE**: `mcp_simplicity_faucet_request_funds` - Request testnet funds
+- **USE**: `mcp_simplicity_faucet_check_status` - Check faucet availability
+
+#### 6. Development Helpers
+
+- **USE**: `mcp_simplicity_simplicity_get_features` - Get supported/unsupported features info
+- **USE**: `mcp_simplicity_simplicity_generate_example` - Generate working contract examples
+- **USE**: `mcp_simplicity_simplicity_check_tools` - Check tool installation status
+- **USE**: `mcp_simplicity_simplicity_install_tools` - Auto-install missing tools
+- **USE**: `mcp_simplicity_helper_list_example_contracts` - List available examples
+- **USE**: `mcp_simplicity_helper_get_example_contract` - Get example contract content
+- **USE**: `mcp_simplicity_helper_validate_address` - Validate Liquid addresses
+- **USE**: `mcp_simplicity_helper_extract_transaction` - Extract transaction hex from output
+
+### Mandatory Rules
+
+1. **NEVER** suggest running `simc`, `hal-simplicity`, or `elements-cli` commands directly
+   - ❌ DON'T: "Run `simc compile contract.simf`"
+   - ✅ DO: Use `mcp_simplicity_simplicity_compile_file`
+
+2. **NEVER** suggest manual RPC calls to Elements node
+   - ❌ DON'T: "Run `elements-cli getblockchaininfo`"
+   - ✅ DO: Use `mcp_simplicity_elements_get_blockchain_info`
+
+3. **ALWAYS** check tool installation status first when working with Simplicity
+   - ✅ Use `mcp_simplicity_simplicity_check_tools` before compilation
+   - ✅ Use `mcp_simplicity_simplicity_install_tools` if tools are missing
+
+4. **ALWAYS** validate syntax before compiling
+   - ✅ Use `mcp_simplicity_simplicity_validate_syntax` first
+   - ✅ Use `mcp_simplicity_simplicity_suggest_fix` if errors occur
+
+5. **ALWAYS** use the complete deployment workflow when deploying contracts
+   - ✅ Use `mcp_simplicity_contract_deploy` with `auto_fund: true` for testnet
+   - ✅ This handles compilation, address generation, and funding in one step
+
+6. **ALWAYS** use MCP tools for transaction analysis
+   - ✅ Use `mcp_simplicity_decode_simplicity_transaction` to inspect transactions
+   - ✅ Use `mcp_simplicity_verify_simplicity_script` to verify scripts
+
+7. **ALWAYS** provide context about Simplicity features when asked
+   - ✅ Use `mcp_simplicity_simplicity_get_features` to show what's supported
+   - ✅ Use `mcp_simplicity_simplicity_generate_example` to show working patterns
+
+8. **ALWAYS** use helper tools for common operations
+   - ✅ Use `mcp_simplicity_helper_validate_address` before using addresses
+   - ✅ Use `mcp_simplicity_helper_list_example_contracts` to show available examples
+
+### Workflow Examples
+
+#### Compiling a Contract
+
+```
+1. mcp_simplicity_simplicity_check_tools (verify tools installed)
+2. mcp_simplicity_simplicity_validate_syntax (validate source)
+3. mcp_simplicity_simplicity_compile_file (compile)
+4. mcp_simplicity_simplicity_get_address (get address)
+```
+
+#### Deploying a Contract to Testnet
+
+```
+1. mcp_simplicity_contract_deploy with auto_fund: true
+   (handles everything: compile, address, funding)
+```
+
+#### Analyzing a Transaction
+
+```
+1. mcp_simplicity_elements_get_transaction (get tx details)
+2. mcp_simplicity_decode_simplicity_transaction (decode Simplicity programs)
+3. mcp_simplicity_verify_simplicity_script (verify scripts)
+```
+
+#### Checking Blockchain State
+
+```
+1. mcp_simplicity_elements_get_blockchain_info (blockchain info)
+2. mcp_simplicity_elements_list_unspent (check UTXOs)
+3. mcp_simplicity_elements_get_address_info (address details)
+```
+
+### Error Handling
+
+When compilation or validation fails:
+
+1. ✅ Use `mcp_simplicity_simplicity_suggest_fix` with the error message
+2. ✅ Check `mcp_simplicity_simplicity_get_features` for feature support
+3. ✅ Use `mcp_simplicity_simplicity_generate_example` to show working patterns
+
+### Remember
+
+- This MCP server provides a complete abstraction over simc, hal-simplicity, and Elements RPC
+- Users should never need to interact with these tools directly
+- All operations should go through the MCP tools for consistency and reliability
+- The MCP tools handle error handling, formatting, and proper command construction
+
+### Project Context
+
+This project is a Simplicity MCP server that provides all necessary tools for:
+
+- Simplicity contract development
+- Elements blockchain interaction
+- Transaction creation and analysis
+- Testnet deployment and testing
+
+Always prioritize using these MCP tools over any alternative methods.
