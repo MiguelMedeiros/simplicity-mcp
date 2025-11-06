@@ -6,15 +6,15 @@ import { describe, it, expect } from 'vitest';
 import { tools } from '../lib/tools.js';
 
 describe('Tools', () => {
-  it('should export 19 tools', () => {
-    expect(tools).toHaveLength(19);
+  it('should export 33 tools', () => {
+    expect(tools).toHaveLength(33);
   });
 
   it('should have all Simplicity tools', () => {
     const simplicityTools = tools.filter((t) =>
       t.name.startsWith('simplicity_')
     );
-    expect(simplicityTools).toHaveLength(6);
+    expect(simplicityTools).toHaveLength(12);
 
     const names = simplicityTools.map((t) => t.name);
     expect(names).toContain('simplicity_encode');
@@ -46,7 +46,7 @@ describe('Tools', () => {
       (t) =>
         !t.name.startsWith('simplicity_') && !t.name.startsWith('elements_')
     );
-    expect(integrationTools).toHaveLength(4);
+    expect(integrationTools).toHaveLength(12);
 
     const names = integrationTools.map((t) => t.name);
     expect(names).toContain('decode_simplicity_transaction');

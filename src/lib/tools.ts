@@ -233,4 +233,283 @@ export const tools: Tool[] = [
       required: ['block_hash'],
     },
   },
+  // New advanced Simplicity tools
+  {
+    name: 'simplicity_compile_file',
+    description:
+      'Compile a .simf file to Simplicity program using simc compiler',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file_path: {
+          type: 'string',
+          description: 'Path to .simf file',
+        },
+      },
+      required: ['file_path'],
+    },
+  },
+  {
+    name: 'simplicity_compile_source',
+    description: 'Compile SimplicityHL source code to Simplicity program',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        source: {
+          type: 'string',
+          description: 'SimplicityHL source code',
+        },
+      },
+      required: ['source'],
+    },
+  },
+  {
+    name: 'simplicity_get_address',
+    description:
+      'Get on-chain address for a Simplicity program using hal-simplicity',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        program: {
+          type: 'string',
+          description: 'Base64-encoded Simplicity program',
+        },
+      },
+      required: ['program'],
+    },
+  },
+  {
+    name: 'simplicity_decode_program',
+    description: 'Decode a Simplicity program to readable format',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        program: {
+          type: 'string',
+          description: 'Base64-encoded Simplicity program',
+        },
+      },
+      required: ['program'],
+    },
+  },
+  {
+    name: 'simplicity_create_witness',
+    description: 'Create witness template for a contract type',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contract_type: {
+          type: 'string',
+          enum: ['empty', 'p2ms', 'htlc', 'vault'],
+          description: 'Type of contract',
+        },
+      },
+      required: ['contract_type'],
+    },
+  },
+  {
+    name: 'simplicity_check_tools',
+    description:
+      'Check if Simplicity tools (simc, hal-simplicity) are installed with detailed installation instructions',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'simplicity_install_tools',
+    description:
+      'Automatically install missing Simplicity tools (simc, hal-simplicity) via cargo',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  // Faucet tools
+  {
+    name: 'faucet_request_funds',
+    description: 'Request LBTC from Liquid testnet faucet',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'string',
+          description: 'Liquid address to receive funds',
+        },
+        asset: {
+          type: 'string',
+          enum: ['lbtc', 'asset'],
+          description: 'Asset type (default: lbtc)',
+        },
+      },
+      required: ['address'],
+    },
+  },
+  {
+    name: 'faucet_check_status',
+    description: 'Check if Liquid testnet faucet is available',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  // Contract workflow tools
+  {
+    name: 'contract_deploy',
+    description:
+      'Complete workflow: compile contract, get address, and optionally fund it',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        contract_file: {
+          type: 'string',
+          description: 'Path to .simf contract file',
+        },
+        auto_fund: {
+          type: 'boolean',
+          description: 'Automatically request funds from faucet',
+        },
+      },
+      required: ['contract_file'],
+    },
+  },
+  {
+    name: 'contract_spend',
+    description: 'Spend funds from a Simplicity contract',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        program: {
+          type: 'string',
+          description: 'Base64-encoded Simplicity program',
+        },
+        witness_file: {
+          type: 'string',
+          description: 'Path to witness file',
+        },
+        utxo_txid: {
+          type: 'string',
+          description: 'Transaction ID of UTXO to spend',
+        },
+        utxo_vout: {
+          type: 'number',
+          description: 'Output index of UTXO to spend',
+        },
+        destination: {
+          type: 'string',
+          description: 'Destination address',
+        },
+      },
+      required: ['program', 'witness_file'],
+    },
+  },
+  // Helper tools
+  {
+    name: 'helper_extract_transaction',
+    description: 'Extract transaction hex from hal-simplicity output',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        output: {
+          type: 'string',
+          description: 'hal-simplicity command output',
+        },
+      },
+      required: ['output'],
+    },
+  },
+  {
+    name: 'helper_validate_address',
+    description: 'Validate if a string is a valid Liquid address',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'string',
+          description: 'Address to validate',
+        },
+      },
+      required: ['address'],
+    },
+  },
+  {
+    name: 'helper_list_example_contracts',
+    description: 'List available example contracts',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'helper_get_example_contract',
+    description: 'Get the content of an example contract',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          enum: ['empty', 'p2ms', 'htlc', 'vault'],
+          description: 'Name of example contract',
+        },
+      },
+      required: ['name'],
+    },
+  },
+  // New intelligent Simplicity tools
+  {
+    name: 'simplicity_get_features',
+    description:
+      'Get detailed information about supported and unsupported simc features, including working jets',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'simplicity_generate_example',
+    description:
+      'Generate a working Simplicity contract example based on a pattern (minimal, comparison, assertion)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pattern: {
+          type: 'string',
+          enum: ['minimal', 'comparison', 'assertion'],
+          description:
+            'Pattern to generate: minimal (basic program), comparison (using jets), assertion (with validation)',
+        },
+      },
+      required: ['pattern'],
+    },
+  },
+  {
+    name: 'simplicity_validate_syntax',
+    description:
+      'Validate SimplicityHL source code syntax before compiling, with helpful error messages',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        source: {
+          type: 'string',
+          description: 'SimplicityHL source code to validate',
+        },
+      },
+      required: ['source'],
+    },
+  },
+  {
+    name: 'simplicity_suggest_fix',
+    description:
+      'Get helpful suggestions to fix a simc compilation error based on error message',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        error_message: {
+          type: 'string',
+          description: 'The error message from simc compiler',
+        },
+      },
+      required: ['error_message'],
+    },
+  },
 ];

@@ -1,0 +1,33 @@
+// vault.simf - Simple Vault with delayed withdrawal
+// Funds can be withdrawn only after a delay period
+// Demonstrates time-locked security for cold storage
+
+fn main() {
+    // Contract parameters
+    let owner_pk: u32 = 0x0279be66;      // Owner public key
+    let guardian_pk: u32 = 0x02c6047f;   // Guardian public key
+    let delay_blocks: u32 = 144;         // Delay period (~1 day on Bitcoin)
+    
+    // Witness data (simulated - in real implementation from witness)
+    let provided_sig: u32 = 0x0279be66;       // Signature provided
+    let withdrawal_block: u32 = 1000;         // Block when withdrawal was initiated
+    let current_height: u32 = 1150;           // Current block height
+    
+    // Verify signature is from owner or guardian
+    let owner_sig_valid: bool = jet::eq_32(owner_pk, provided_sig);
+    let guardian_sig_valid: bool = jet::eq_32(guardian_pk, provided_sig);
+    
+    // Calculate required block height for owner withdrawal
+    let required_height: u32 = 1144;  // withdrawal_block + delay_blocks (1000 + 144)
+    let delay_met: bool = jet::le_32(required_height, current_height);
+    
+    // Two spending paths:
+    // 1. Owner can withdraw after delay period
+    // 2. Guardian can withdraw immediately (emergency recovery)
+    // For this example, we verify the owner path with delay
+    assert!(owner_sig_valid);
+    assert!(delay_met);
+    ()
+}
+
+

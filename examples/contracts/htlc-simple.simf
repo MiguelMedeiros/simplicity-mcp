@@ -1,0 +1,23 @@
+// htlc-simple.simf - Simplified Hash Time Lock Contract
+// This version uses only supported simc features
+// Demonstrates basic HTLC logic without advanced features
+
+fn main() {
+    // Simulated hash preimage (32 bytes as u32 representation)
+    // In real implementation, this would come from witness
+    let preimage: u32 = 0x12345678;
+    
+    // Expected hash value (what the preimage should hash to)
+    let expected_hash: u32 = 0x12345678;  // For demo, same value
+    
+    // Verify the preimage matches expected hash
+    // In real implementation, would use SHA256
+    let hash_valid: bool = jet::eq_32(preimage, expected_hash);
+    
+    // Assert hash is valid (allows complete path)
+    assert!(hash_valid);
+    
+    // If we get here, the spend is authorized
+    ()
+}
+

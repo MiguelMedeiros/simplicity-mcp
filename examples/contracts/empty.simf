@@ -1,0 +1,9 @@
+// empty.simf - Always approves every transaction
+// This is the simplest Simplicity program (equivalent to JA== base64)
+// It always returns true, allowing any transaction to spend funds
+
+fn main() {
+    ()
+}
+
+
