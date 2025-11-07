@@ -26,15 +26,18 @@ export interface ProgramInfo {
 export interface SimplicityToolsConfig {
   simcPath?: string;
   halSimplicityPath?: string;
+  halSignerPath?: string;
 }
 
 export class SimplicityTools {
   private simcPath: string;
   private halSimplicityPath: string;
+  private halSignerPath: string;
 
   constructor(config: SimplicityToolsConfig = {}) {
     this.simcPath = config.simcPath || 'simc';
     this.halSimplicityPath = config.halSimplicityPath || 'hal-simplicity';
+    this.halSignerPath = config.halSignerPath || 'hal-simplicity-signer';
   }
 
   /**
@@ -55,6 +58,18 @@ export class SimplicityTools {
   async isHalSimplicityAvailable(): Promise<boolean> {
     try {
       await execAsync(`which ${this.halSimplicityPath}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if hal-simplicity-signer is available
+   */
+  async isHalSignerAvailable(): Promise<boolean> {
+    try {
+      await execAsync(`which ${this.halSignerPath}`);
       return true;
     } catch {
       return false;
@@ -141,13 +156,14 @@ export class SimplicityTools {
 
   /**
    * Get program info (address, hash, witness structure)
+   * Uses hal-simplicity (nums-key branch) for general operations
    */
   async getProgramInfo(program: string): Promise<ProgramInfo> {
     const halAvailable = await this.isHalSimplicityAvailable();
     if (!halAvailable) {
       return {
         error:
-          'hal-simplicity not found. Please install from https://github.com/BlockstreamResearch/hal-simplicity',
+          'hal-simplicity not found. Please install nums-key branch from https://github.com/apoelstra/hal-simplicity',
       };
     }
 
@@ -179,6 +195,7 @@ export class SimplicityTools {
 
   /**
    * Decode a Simplicity program
+   * Uses hal-simplicity (nums-key branch) for general operations
    */
   async decodeProgram(program: string): Promise<{
     success: boolean;
@@ -190,13 +207,13 @@ export class SimplicityTools {
       return {
         success: false,
         error:
-          'hal-simplicity not found. Please install from https://github.com/BlockstreamResearch/hal-simplicity',
+          'hal-simplicity not found. Please install nums-key branch from https://github.com/apoelstra/hal-simplicity',
       };
     }
 
     try {
       const { stdout } = await execAsync(
-        `echo "${program}" | ${this.halSimplicityPath} simplicity decode`
+        `echo "${program}" | ${this.halSimplicityPath} simplicity info`
       );
 
       return {
@@ -207,6 +224,168 @@ export class SimplicityTools {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Decoding failed',
+      };
+    }
+  }
+
+  /**
+   * Create a PSET (Partially Signed Elements Transaction)
+   * Uses hal-simplicity-signer (pset-signer branch) for PSET operations
+   */
+  async createPSET(): Promise<{
+    success: boolean;
+    pset?: string;
+    error?: string;
+  }> {
+    const signerAvailable = await this.isHalSignerAvailable();
+    if (!signerAvailable) {
+      return {
+        success: false,
+        error:
+          'hal-simplicity-signer not found. Please install pset-signer branch from https://github.com/apoelstra/hal-simplicity',
+      };
+    }
+
+    try {
+      const { stdout } = await execAsync(
+        `${this.halSignerPath} simplicity pset create`
+      );
+
+      return {
+        success: true,
+        pset: stdout.trim(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create PSET',
+      };
+    }
+  }
+
+  /**
+   * Update PSET input with UTXO data
+   * Uses hal-simplicity-signer (pset-signer branch)
+   */
+  async updatePSETInput(
+    pset: string,
+    txid: string,
+    vout: number,
+    amount: number,
+    asset?: string,
+    scriptPubKey?: string
+  ): Promise<{
+    success: boolean;
+    pset?: string;
+    error?: string;
+  }> {
+    const signerAvailable = await this.isHalSignerAvailable();
+    if (!signerAvailable) {
+      return {
+        success: false,
+        error:
+          'hal-simplicity-signer not found. Please install pset-signer branch',
+      };
+    }
+
+    try {
+      let cmd = `echo "${pset}" | ${this.halSignerPath} simplicity pset update-input --txid ${txid} --vout ${vout} --amount ${amount}`;
+      
+      if (asset) {
+        cmd += ` --asset ${asset}`;
+      }
+      if (scriptPubKey) {
+        cmd += ` --script ${scriptPubKey}`;
+      }
+
+      const { stdout } = await execAsync(cmd);
+
+      return {
+        success: true,
+        pset: stdout.trim(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to update PSET input',
+      };
+    }
+  }
+
+  /**
+   * Finalize PSET with Simplicity program and witness
+   * Uses hal-simplicity-signer (pset-signer branch)
+   */
+  async finalizePSET(
+    pset: string,
+    program: string,
+    witness: string
+  ): Promise<{
+    success: boolean;
+    pset?: string;
+    error?: string;
+  }> {
+    const signerAvailable = await this.isHalSignerAvailable();
+    if (!signerAvailable) {
+      return {
+        success: false,
+        error:
+          'hal-simplicity-signer not found. Please install pset-signer branch',
+      };
+    }
+
+    try {
+      const { stdout } = await execAsync(
+        `echo "${pset}" | ${this.halSignerPath} simplicity pset finalize "${program}" "${witness}"`
+      );
+
+      return {
+        success: true,
+        pset: stdout.trim(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to finalize PSET',
+      };
+    }
+  }
+
+  /**
+   * Extract signed transaction from finalized PSET
+   * Uses hal-simplicity-signer (pset-signer branch)
+   */
+  async extractTransaction(pset: string): Promise<{
+    success: boolean;
+    transaction?: string;
+    error?: string;
+  }> {
+    const signerAvailable = await this.isHalSignerAvailable();
+    if (!signerAvailable) {
+      return {
+        success: false,
+        error:
+          'hal-simplicity-signer not found. Please install pset-signer branch',
+      };
+    }
+
+    try {
+      const { stdout } = await execAsync(
+        `echo "${pset}" | ${this.halSignerPath} simplicity pset extract`
+      );
+
+      return {
+        success: true,
+        transaction: stdout.trim(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to extract transaction',
       };
     }
   }
@@ -501,6 +680,7 @@ export function isValidBase64Program(program: string): boolean {
 export async function checkToolsInstallation(): Promise<{
   simc_installed: boolean;
   hal_simplicity_installed: boolean;
+  hal_signer_installed: boolean;
   all_installed: boolean;
   missing_tools: string[];
   installation_instructions: string;
@@ -509,10 +689,12 @@ export async function checkToolsInstallation(): Promise<{
 
   const simcInstalled = await tools.isSimcAvailable();
   const halInstalled = await tools.isHalSimplicityAvailable();
+  const halSignerInstalled = await tools.isHalSignerAvailable();
 
   const missingTools: string[] = [];
   if (!simcInstalled) missingTools.push('simc');
   if (!halInstalled) missingTools.push('hal-simplicity');
+  if (!halSignerInstalled) missingTools.push('hal-simplicity-signer');
 
   const instructions = `
 Missing Simplicity tools: ${missingTools.join(', ')}
@@ -524,22 +706,32 @@ Installation Instructions:
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 2. Install simc (Simplicity Compiler):
-   cargo install --git https://github.com/BlockstreamResearch/simfony simc
+   cargo install --git https://github.com/BlockstreamResearch/SimplicityHL.git
 
-3. Install hal-simplicity (Simplicity tools):
-   cargo install --git https://github.com/sanket1729/hal hal-simplicity
+3. Install hal-simplicity (nums-key branch - general operations):
+   cargo install --git https://github.com/apoelstra/hal-simplicity.git --branch 2025-11/nums-key
+
+4. Install hal-simplicity-signer (pset-signer branch - signing operations):
+   cd /tmp
+   git clone https://github.com/apoelstra/hal-simplicity.git hal-simplicity-signer
+   cd hal-simplicity-signer
+   git checkout 2025-10/pset-signer
+   cargo build --release
+   cp target/release/hal-simplicity ~/.cargo/bin/hal-simplicity-signer
 
 After installation, restart your terminal and verify:
    simc --help
    hal-simplicity --help
+   hal-simplicity-signer simplicity pset --help
 
-For more details, see: INSTALL_TOOLS.md
+For more details, see: HAL_SIMPLICITY_BRANCHES.md
 `;
 
   return {
     simc_installed: simcInstalled,
     hal_simplicity_installed: halInstalled,
-    all_installed: simcInstalled && halInstalled,
+    hal_signer_installed: halSignerInstalled,
+    all_installed: simcInstalled && halInstalled && halSignerInstalled,
     missing_tools: missingTools,
     installation_instructions:
       missingTools.length > 0 ? instructions : 'All tools are installed!',

@@ -18,40 +18,30 @@ describe('Config', () => {
   });
 
   it('should load default configuration', () => {
-    delete process.env.ELEMENTS_RPC_URL;
-    delete process.env.ELEMENTS_RPC_USER;
-    delete process.env.ELEMENTS_RPC_PASSWORD;
+    delete process.env.ESPLORA_API_URL;
 
     const config = loadConfig();
 
     expect(config).toEqual({
-      elementsRpcUrl: 'http://127.0.0.1:18884',
-      elementsRpcUser: 'elementsuser',
-      elementsRpcPassword: 'elementspass',
+      esploraApiUrl: 'https://blockstream.info/liquidtestnet/api',
     });
   });
 
   it('should load configuration from environment variables', () => {
-    process.env.ELEMENTS_RPC_URL = 'http://custom:8080';
-    process.env.ELEMENTS_RPC_USER = 'testuser';
-    process.env.ELEMENTS_RPC_PASSWORD = 'testpass';
+    process.env.ESPLORA_API_URL = 'https://custom-esplora.com/api';
 
     const config = loadConfig();
 
     expect(config).toEqual({
-      elementsRpcUrl: 'http://custom:8080',
-      elementsRpcUser: 'testuser',
-      elementsRpcPassword: 'testpass',
+      esploraApiUrl: 'https://custom-esplora.com/api',
     });
   });
 
   it('should use environment variables over defaults', () => {
-    process.env.ELEMENTS_RPC_URL = 'http://override:9999';
+    process.env.ESPLORA_API_URL = 'http://localhost:3000';
 
     const config = loadConfig();
 
-    expect(config.elementsRpcUrl).toBe('http://override:9999');
-    expect(config.elementsRpcUser).toBe('elementsuser');
-    expect(config.elementsRpcPassword).toBe('elementspass');
+    expect(config.esploraApiUrl).toBe('http://localhost:3000');
   });
 });

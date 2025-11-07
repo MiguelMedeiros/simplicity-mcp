@@ -7,7 +7,7 @@ import {
   CallToolResult,
   TextContent,
 } from '@modelcontextprotocol/sdk/types.js';
-import { ElementsClient } from './elements-client.js';
+import { EsploraClient } from './esplora-client.js';
 import {
   SimplicityTools,
   extractTransaction,
@@ -158,7 +158,7 @@ function createTextResponse(data: unknown): CallToolResult {
 export type ToolHandler<T = unknown> = (args: T) => Promise<CallToolResult>;
 
 export function createHandlers(
-  elementsClient: ElementsClient
+  esploraClient: EsploraClient
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, ToolHandler<any>> {
   // Initialize tools
@@ -228,9 +228,9 @@ export function createHandlers(
       );
     },
 
-    // Elements tools
+    // Elements tools (now using Esplora API)
     elements_get_blockchain_info: async () => {
-      const info = await elementsClient.getBlockchainInfo();
+      const info = await esploraClient.getBlockchainInfo();
       return createTextResponse(info);
     },
 
@@ -238,7 +238,7 @@ export function createHandlers(
       if (!hash && height === undefined) {
         throw new Error("Either 'hash' or 'height' must be provided");
       }
-      const block = await elementsClient.getBlock(
+      const block = await esploraClient.getBlock(
         hash ?? (height as string | number)
       );
       return createTextResponse(block);
@@ -248,24 +248,33 @@ export function createHandlers(
       txid,
       verbose = true,
     }: GetTransactionArgs) => {
-      const tx = await elementsClient.getTransaction(txid, verbose);
+      const tx = await esploraClient.getTransaction(txid, verbose);
       return createTextResponse(tx);
     },
 
-    elements_decode_rawtransaction: async ({
+    elements_decode_rawtransaction: ({
       hex,
     }: DecodeRawTransactionArgs) => {
-      const decoded = await elementsClient.decodeRawTransaction(hex);
-      return createTextResponse(decoded);
+      return Promise.resolve(createTextResponse({
+        error: 'decodeRawTransaction is not supported via Esplora API',
+        tip: 'Broadcast the transaction to decode it, or use a local Bitcoin library',
+        hex_provided: hex.substring(0, 64) + '...',
+      }));
     },
 
-    elements_get_address_info: async ({ address }: GetAddressInfoArgs) => {
-      const info = await elementsClient.getAddressInfo(address);
-      return createTextResponse(info);
+    elements_get_address_info: ({ address }: GetAddressInfoArgs) => {
+      const info = esploraClient.getAddressInfo(address);
+      return Promise.resolve(createTextResponse(info));
     },
 
     elements_list_unspent: async ({ address }: ListUnspentArgs) => {
-      const unspent = await elementsClient.listUnspent(address);
+      if (!address) {
+        return createTextResponse({
+          error: 'Address is required when using Esplora API',
+          tip: 'Provide an address to list UTXOs for that address',
+        });
+      }
+      const unspent = await esploraClient.listUnspent(address);
       return createTextResponse(unspent);
     },
 
@@ -274,57 +283,61 @@ export function createHandlers(
         createTextResponse({
           asset_id,
           message:
-            'Asset info retrieval not directly supported in Elements RPC',
+            'Asset info retrieval not directly supported in Esplora API',
         })
       );
     },
 
-    elements_list_issuances: async () => {
-      const issuances = await elementsClient.listIssuances();
-      return createTextResponse(issuances);
+    elements_list_issuances: () => {
+      const issuances = esploraClient.listIssuances();
+      return Promise.resolve(createTextResponse(issuances));
     },
 
-    elements_get_pegin_address: async () => {
-      const address = await elementsClient.getPeginAddress();
-      return createTextResponse(address);
+    elements_get_pegin_address: () => {
+      const address = esploraClient.getPeginAddress();
+      return Promise.resolve(createTextResponse(address));
     },
 
-    // Utility handlers for development and testing
-    elements_generate_blocks: async ({
+    // Utility handlers - Some not available via Esplora
+    elements_generate_blocks: ({
       nblocks,
       address,
     }: {
       nblocks: number;
       address: string;
     }) => {
-      const blockHashes = await elementsClient.generateToAddress(
-        nblocks,
-        address
-      );
-      return createTextResponse({
-        blocks_generated: nblocks,
-        address,
-        block_hashes: blockHashes,
-      });
+      return Promise.resolve(createTextResponse({
+        error: 'generateToAddress is not available via Esplora API',
+        tip: 'This requires a regtest/testnet node with mining capabilities',
+        requested_blocks: nblocks,
+        requested_address: address,
+      }));
     },
 
-    elements_get_balance: async ({
+    elements_get_balance: ({
       account,
       minconf,
     }: {
       account?: string;
       minconf?: number;
     }) => {
-      const balance = await elementsClient.getBalance(account, minconf);
-      return createTextResponse(balance);
+      return Promise.resolve(createTextResponse({
+        error: 'getBalance is not available via Esplora API',
+        tip: 'Use elements_list_unspent with an address to calculate balance from UTXOs',
+        account,
+        minconf,
+      }));
     },
 
-    elements_get_new_address: async ({ label }: { label?: string }) => {
-      const address = await elementsClient.getNewAddress(label);
-      return createTextResponse({ address, label: label || '' });
+    elements_get_new_address: ({ label }: { label?: string }) => {
+      return Promise.resolve(createTextResponse({
+        error: 'getNewAddress is not available via Esplora API',
+        tip: 'Use a wallet application or library to generate new addresses',
+        label,
+      }));
     },
 
-    elements_send_to_address: async ({
+    elements_send_to_address: ({
       address,
       amount,
       comment,
@@ -335,30 +348,27 @@ export function createHandlers(
       comment?: string;
       comment_to?: string;
     }) => {
-      const txid = await elementsClient.sendToAddress(
+      return Promise.resolve(createTextResponse({
+        error: 'sendToAddress is not available via Esplora API',
+        tip: 'Create and sign transactions using a wallet, then broadcast with broadcastTransaction',
         address,
         amount,
         comment,
-        comment_to
-      );
-      return createTextResponse({
-        txid,
-        address,
-        amount,
-      });
+        comment_to,
+      }));
     },
 
     elements_get_block_count: async () => {
-      const height = await elementsClient.getBlockCount();
+      const height = await esploraClient.getBlockCount();
       return createTextResponse({ block_height: height });
     },
 
     elements_get_block_hash: async ({ height }: { height: number }) => {
-      const hash = await elementsClient.getBlockHash(height);
+      const hash = await esploraClient.getBlockHash(height);
       return createTextResponse({ height, block_hash: hash });
     },
 
-    elements_list_transactions: async ({
+    elements_list_transactions: ({
       account,
       count,
       skip,
@@ -367,15 +377,37 @@ export function createHandlers(
       count?: number;
       skip?: number;
     }) => {
-      const transactions = await elementsClient.listTransactions(
+      return Promise.resolve(createTextResponse({
+        error: 'listTransactions is not available via Esplora API',
+        tip: 'Use elements_get_address_transactions for specific addresses',
         account,
-        count || 10,
-        skip
-      );
+        count,
+        skip,
+      }));
+    },
+
+    // New Esplora-specific tools
+    elements_get_address_transactions: async ({ address }: { address: string }) => {
+      const txs = await esploraClient.getAddressTransactions(address);
       return createTextResponse({
-        transactions,
-        count: transactions.length,
+        address,
+        transactions: txs,
+        count: txs.length,
       });
+    },
+
+    elements_broadcast_transaction: async ({ tx_hex }: { tx_hex: string }) => {
+      const txid = await esploraClient.broadcastTransaction(tx_hex);
+      return createTextResponse({
+        success: true,
+        txid,
+        broadcasted: true,
+      });
+    },
+
+    elements_get_fee_estimates: async () => {
+      const estimates = await esploraClient.getFeeEstimates();
+      return createTextResponse(estimates);
     },
 
     // Integration tools
@@ -383,7 +415,7 @@ export function createHandlers(
       txid,
       output_index = 0,
     }: DecodeSimplicityTransactionArgs) => {
-      const tx = await elementsClient.getTransaction(txid, true);
+      const tx = await esploraClient.getTransaction(txid, true);
       return createTextResponse({
         txid,
         output_index,
@@ -422,7 +454,7 @@ export function createHandlers(
     analyze_simplicity_in_block: async ({
       block_hash,
     }: AnalyzeSimplicityInBlockArgs) => {
-      const block = await elementsClient.getBlock(block_hash);
+      const block = await esploraClient.getBlock(block_hash);
       return createTextResponse({
         block_hash,
         block_height: block.height,
@@ -802,6 +834,68 @@ export function createHandlers(
             'Use simplicity_get_features to see supported features, or simplicity_generate_example for working patterns',
         })
       );
+    },
+
+    // PSET Operations (using hal-simplicity-signer)
+    pset_create: async () => {
+      const result = await simplicityTools.createPSET();
+      return createTextResponse({
+        ...result,
+        note: 'Uses hal-simplicity-signer (pset-signer branch) for PSET operations',
+      });
+    },
+
+    pset_update_input: async ({
+      pset,
+      txid,
+      vout,
+      amount,
+      asset,
+      script_pubkey,
+    }: {
+      pset: string;
+      txid: string;
+      vout: number;
+      amount: number;
+      asset?: string;
+      script_pubkey?: string;
+    }) => {
+      const result = await simplicityTools.updatePSETInput(
+        pset,
+        txid,
+        vout,
+        amount,
+        asset,
+        script_pubkey
+      );
+      return createTextResponse({
+        ...result,
+        note: 'Uses hal-simplicity-signer (pset-signer branch)',
+      });
+    },
+
+    pset_finalize: async ({
+      pset,
+      program,
+      witness,
+    }: {
+      pset: string;
+      program: string;
+      witness: string;
+    }) => {
+      const result = await simplicityTools.finalizePSET(pset, program, witness);
+      return createTextResponse({
+        ...result,
+        note: 'Uses hal-simplicity-signer (pset-signer branch)',
+      });
+    },
+
+    pset_extract: async ({ pset }: { pset: string }) => {
+      const result = await simplicityTools.extractTransaction(pset);
+      return createTextResponse({
+        ...result,
+        note: 'Uses hal-simplicity-signer (pset-signer branch). Use elements_broadcast_transaction to broadcast.',
+      });
     },
   };
 }

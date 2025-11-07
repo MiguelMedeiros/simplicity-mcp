@@ -56,9 +56,7 @@ npm run setup
 
 ```bash
 npm run build        # Build
-npm test             # Test (82 tests)
-npm run docker:up    # Start Elements
-npm run docker:down  # Stop Elements
+npm test             # Test
 ```
 
 ## 🐛 Troubleshooting
@@ -73,11 +71,10 @@ which simplicity-mcp
 1. Check `~/.cursor/mcp.json`
 2. Restart Cursor
 
-### Elements not running
-```bash
-npm run docker:up
-npm run docker:logs
-```
+### API Connection
+- Uses Blockstream's public Esplora API
+- No Docker or local node required
+- Works directly with Liquid Testnet
 
 ## 📚 Next Steps
 

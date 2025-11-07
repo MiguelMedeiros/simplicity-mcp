@@ -627,4 +627,88 @@ export const tools: Tool[] = [
       required: ['error_message'],
     },
   },
+
+  // PSET Operations (using hal-simplicity-signer)
+  {
+    name: 'pset_create',
+    description:
+      'Create an empty PSET (Partially Signed Elements Transaction). Uses hal-simplicity-signer (pset-signer branch). This is the first step to build and sign a Simplicity transaction.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'pset_update_input',
+    description:
+      'Update a PSET input with UTXO data (txid, vout, amount, asset, scriptPubKey). Uses hal-simplicity-signer (pset-signer branch). Required before finalizing the PSET.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pset: {
+          type: 'string',
+          description: 'The PSET to update (base64 or hex encoded)',
+        },
+        txid: {
+          type: 'string',
+          description: 'Transaction ID of the UTXO being spent',
+        },
+        vout: {
+          type: 'number',
+          description: 'Output index of the UTXO being spent',
+        },
+        amount: {
+          type: 'number',
+          description: 'Amount in satoshis of the UTXO',
+        },
+        asset: {
+          type: 'string',
+          description: 'Asset ID (optional, defaults to L-BTC)',
+        },
+        script_pubkey: {
+          type: 'string',
+          description: 'Script pubkey of the UTXO (optional)',
+        },
+      },
+      required: ['pset', 'txid', 'vout', 'amount'],
+    },
+  },
+  {
+    name: 'pset_finalize',
+    description:
+      'Finalize a PSET by attaching a Simplicity program and witness. Uses hal-simplicity-signer (pset-signer branch). This completes the signing process.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pset: {
+          type: 'string',
+          description: 'The PSET to finalize (with UTXO data)',
+        },
+        program: {
+          type: 'string',
+          description: 'Base64-encoded Simplicity program',
+        },
+        witness: {
+          type: 'string',
+          description: 'Hex-encoded witness data',
+        },
+      },
+      required: ['pset', 'program', 'witness'],
+    },
+  },
+  {
+    name: 'pset_extract',
+    description:
+      'Extract the final signed transaction from a completed PSET. Uses hal-simplicity-signer (pset-signer branch). The resulting transaction can be broadcast to the network.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pset: {
+          type: 'string',
+          description: 'The finalized PSET',
+        },
+      },
+      required: ['pset'],
+    },
+  },
 ];

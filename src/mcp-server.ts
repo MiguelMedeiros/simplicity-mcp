@@ -13,7 +13,7 @@ import {
   TextContent,
 } from '@modelcontextprotocol/sdk/types.js';
 import { loadConfig } from './lib/config.js';
-import { ElementsClient } from './lib/elements-client.js';
+import { EsploraClient } from './lib/esplora-client.js';
 import { createHandlers } from './lib/handlers.js';
 import { tools } from './lib/tools.js';
 
@@ -21,15 +21,11 @@ async function main(): Promise<void> {
   // Load configuration
   const config = loadConfig();
 
-  // Initialize Elements client
-  const elementsClient = new ElementsClient(
-    config.elementsRpcUrl,
-    config.elementsRpcUser,
-    config.elementsRpcPassword
-  );
+  // Initialize Esplora client
+  const esploraClient = new EsploraClient(config.esploraApiUrl);
 
   // Create tool handlers
-  const toolHandlers = createHandlers(elementsClient);
+  const toolHandlers = createHandlers(esploraClient);
 
   // Create MCP server
   const server = new Server(

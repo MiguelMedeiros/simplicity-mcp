@@ -3,10 +3,10 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ElementsClient } from '../lib/elements-client.js';
+import { EsploraClient } from '../lib/esplora-client.js';
 import { createHandlers } from '../lib/handlers.js';
 
-vi.mock('../elements-client.js');
+vi.mock('../lib/esplora-client.js');
 
 describe('Handlers', () => {
   let mockClient: any;
@@ -22,6 +22,9 @@ describe('Handlers', () => {
       listUnspent: vi.fn(),
       listIssuances: vi.fn(),
       getPeginAddress: vi.fn(),
+      getAddressTransactions: vi.fn(),
+      broadcastTransaction: vi.fn(),
+      getFeeEstimates: vi.fn(),
     };
 
     handlers = createHandlers(mockClient);
@@ -175,28 +178,29 @@ describe('Handlers', () => {
       expect(mockClient.getTransaction).toHaveBeenCalledWith('tx123', true);
     });
 
-    it('should decode raw transaction', async () => {
-      const mockDecoded = { txid: 'tx123' };
-      mockClient.decodeRawTransaction.mockResolvedValue(mockDecoded as any);
-
+    it('should return error for decode raw transaction (not available via Esplora)', async () => {
       const result = await handlers.elements_decode_rawtransaction({
         hex: '0100000000',
       });
       const data = JSON.parse(result.content[0].text);
 
-      expect(data).toEqual(mockDecoded);
+      expect(data.error).toContain('not supported via Esplora API');
+      expect(data.tip).toBeDefined();
     });
 
-    it('should get address info', async () => {
-      const mockInfo = { address: 'addr123', ismine: true };
-      mockClient.getAddressInfo.mockResolvedValue(mockInfo as any);
+    it('should get address info (not available via Esplora)', async () => {
+      mockClient.getAddressInfo = vi.fn().mockReturnValue({
+        address: 'addr123',
+        error: 'getAddressInfo is not available via Esplora API. This requires a wallet.',
+      });
 
       const result = await handlers.elements_get_address_info({
         address: 'addr123',
       });
       const data = JSON.parse(result.content[0].text);
 
-      expect(data).toEqual(mockInfo);
+      expect(data.error).toContain('not available via Esplora API');
+      expect(data.address).toBe('addr123');
     });
 
     it('should list unspent outputs', async () => {
@@ -222,24 +226,27 @@ describe('Handlers', () => {
       expect(data.message).toContain('not directly supported');
     });
 
-    it('should list issuances', async () => {
-      const mockIssuances = [{ asset: 'asset1' }];
-      mockClient.listIssuances.mockResolvedValue(mockIssuances as any);
+    it('should list issuances (not available via Esplora)', async () => {
+      mockClient.listIssuances = vi.fn().mockReturnValue([{
+        error: 'listIssuances is not available via Esplora API. This requires a node with wallet.',
+      }]);
 
       const result = await handlers.elements_list_issuances({});
       const data = JSON.parse(result.content[0].text);
 
-      expect(data).toEqual(mockIssuances);
+      expect(data).toBeInstanceOf(Array);
+      expect(data[0].error).toContain('not available via Esplora API');
     });
 
-    it('should get pegin address', async () => {
-      const mockAddress = { mainchain_address: 'btc123' };
-      mockClient.getPeginAddress.mockResolvedValue(mockAddress as any);
+    it('should get pegin address (not available via Esplora)', async () => {
+      mockClient.getPeginAddress = vi.fn().mockReturnValue({
+        error: 'getPeginAddress is not available via Esplora API. This requires a wallet.',
+      });
 
       const result = await handlers.elements_get_pegin_address({});
       const data = JSON.parse(result.content[0].text);
 
-      expect(data).toEqual(mockAddress);
+      expect(data.error).toContain('not available via Esplora API');
     });
   });
 

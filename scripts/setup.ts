@@ -45,6 +45,7 @@ interface CursorConfig {
     string,
     {
       command: string;
+      args?: string[];
       env: Record<string, string>;
     }
   >;
@@ -63,17 +64,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 2: Check Docker
-  step(2, 'Checking Docker installation');
-  try {
-    execSync('docker --version', { stdio: 'ignore' });
-    log('✅ Docker found', 'green');
-  } catch {
-    log('⚠️  Docker not found. You will need to install Docker to run Elements node.', 'yellow');
-  }
-
-  // Step 3: Install dependencies
-  step(3, 'Installing dependencies');
+  // Step 2: Install dependencies
+  step(2, 'Installing dependencies');
   log('Running: npm install...');
   if (exec('npm install')) {
     log('✅ Dependencies installed', 'green');
@@ -82,8 +74,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 4: Build TypeScript
-  step(4, 'Building TypeScript');
+  // Step 3: Build TypeScript
+  step(3, 'Building TypeScript');
   log('Running: npm run build...');
   if (exec('npm run build')) {
     log('✅ TypeScript compiled successfully', 'green');
@@ -92,8 +84,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 5: Install globally
-  step(5, 'Installing globally');
+  // Step 4: Install globally
+  step(4, 'Installing globally');
   log('Running: npm link...');
   if (exec('npm link')) {
     log('✅ Global command "simplicity-mcp" installed', 'green');
@@ -102,19 +94,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 6: Start Docker
-  step(6, 'Starting Elements node (Docker)');
-  log('Running: docker-compose up -d...');
-  if (exec('docker-compose up -d')) {
-    log('✅ Elements node started', 'green');
-    log('⏳ Waiting 5 seconds for node to initialize...', 'yellow');
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  } else {
-    log('⚠️  Failed to start Docker. You may need to start it manually.', 'yellow');
-  }
-
-  // Step 7: Configure Cursor
-  step(7, 'Configuring Cursor MCP');
+  // Step 5: Configure Cursor
+  step(5, 'Configuring Cursor MCP');
 
   const cursorConfigPath = path.join(os.homedir(), '.cursor', 'mcp.json');
   const cursorConfigDir = path.dirname(cursorConfigPath);
@@ -140,13 +121,16 @@ async function main(): Promise<void> {
       config.mcpServers = {};
     }
 
-    // Add or update simplicity server
+    // Get absolute path to the project
+    const projectPath = process.cwd();
+    const serverPath = path.join(projectPath, 'dist', 'mcp-server.js');
+
+    // Add or update simplicity server with direct path
     config.mcpServers.simplicity = {
-      command: 'simplicity-mcp',
+      command: 'node',
+      args: [serverPath],
       env: {
-        ELEMENTS_RPC_URL: 'http://127.0.0.1:18884',
-        ELEMENTS_RPC_USER: 'elementsuser',
-        ELEMENTS_RPC_PASSWORD: 'elementspass',
+        ESPLORA_API_URL: 'https://blockstream.info/liquidtestnet/api',
       },
     };
 
@@ -154,19 +138,21 @@ async function main(): Promise<void> {
     fs.writeFileSync(cursorConfigPath, JSON.stringify(config, null, 2));
     log('✅ Cursor MCP config updated', 'green');
     log(`📝 Config file: ${cursorConfigPath}`, 'cyan');
+    log(`📝 Server path: ${serverPath}`, 'cyan');
   } catch (error) {
     log('⚠️  Could not update Cursor config automatically', 'yellow');
     log('Please manually add this to ~/.cursor/mcp.json:', 'yellow');
+    const projectPath = process.cwd();
+    const serverPath = path.join(projectPath, 'dist', 'mcp-server.js');
     log(
       JSON.stringify(
         {
           mcpServers: {
             simplicity: {
-              command: 'simplicity-mcp',
+              command: 'node',
+              args: [serverPath],
               env: {
-                ELEMENTS_RPC_URL: 'http://127.0.0.1:18884',
-                ELEMENTS_RPC_USER: 'elementsuser',
-                ELEMENTS_RPC_PASSWORD: 'elementspass',
+                ESPLORA_API_URL: 'https://blockstream.info/liquidtestnet/api',
               },
             },
           },
@@ -186,20 +172,19 @@ async function main(): Promise<void> {
   log('\n📋 Next Steps:\n', 'cyan');
   log('1. Restart Cursor completely (Cmd+Q or Ctrl+Q, then reopen)', 'yellow');
   log('2. Open a new chat and test with:', 'yellow');
-  log('   "What is the current block height on Elements?"', 'cyan');
+  log('   "What is the current block height on Liquid Testnet?"', 'cyan');
   log('\n💡 Useful Commands:\n', 'cyan');
-  log('  npm run docker:up      - Start Elements node', 'reset');
-  log('  npm run docker:down    - Stop Elements node', 'reset');
-  log('  npm run docker:logs    - View Elements logs', 'reset');
   log('  npm test               - Run tests', 'reset');
   log('  npm run build          - Rebuild after changes', 'reset');
+  log('\n✨ No Docker needed! Using Esplora API directly.', 'green');
 
-  log('\n🔗 MCP Server is now globally available as: simplicity-mcp\n', 'green');
+  log(
+    '\n🔗 MCP Server is now globally available as: simplicity-mcp\n',
+    'green'
+  );
 }
 
 main().catch((error: Error) => {
   log(`\n❌ Setup failed: ${error.message}`, 'red');
   process.exit(1);
 });
-
-

@@ -34,17 +34,14 @@ simc test.simf
 ## hal-simplicity
 
 ```bash
-# Install from source
-git clone https://github.com/BlockstreamResearch/hal-simplicity.git
-cd hal-simplicity
-cargo build --release
-cargo install --path .
+# Install from Andrew Poelstra's branch with nums-key support
+cargo install --git https://github.com/apoelstra/hal-simplicity.git --branch 2025-11/nums-key
 
 # Verify
 hal-simplicity --version
 
 # Test
-echo "JA==" | hal-simplicity simplicity info
+hal-simplicity simplicity --help
 ```
 
 ## Verification

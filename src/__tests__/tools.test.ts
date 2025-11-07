@@ -6,8 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { tools } from '../lib/tools.js';
 
 describe('Tools', () => {
-  it('should export 45 tools', () => {
-    expect(tools).toHaveLength(45);
+  it('should export 49 tools', () => {
+    expect(tools).toHaveLength(49);
   });
 
   it('should have all Simplicity tools', () => {
@@ -56,7 +56,8 @@ describe('Tools', () => {
         !t.name.startsWith('elements_') &&
         !t.name.startsWith('faucet_') &&
         !t.name.startsWith('contract_') &&
-        !t.name.startsWith('helper_')
+        !t.name.startsWith('helper_') &&
+        !t.name.startsWith('pset_')
     );
     expect(integrationTools).toHaveLength(4);
 
@@ -65,6 +66,17 @@ describe('Tools', () => {
     expect(names).toContain('verify_simplicity_script');
     expect(names).toContain('estimate_simplicity_cost');
     expect(names).toContain('analyze_simplicity_in_block');
+  });
+
+  it('should have all PSET tools', () => {
+    const psetTools = tools.filter((t) => t.name.startsWith('pset_'));
+    expect(psetTools).toHaveLength(4);
+
+    const names = psetTools.map((t) => t.name);
+    expect(names).toContain('pset_create');
+    expect(names).toContain('pset_update_input');
+    expect(names).toContain('pset_finalize');
+    expect(names).toContain('pset_extract');
   });
 
   it('should have valid input schemas for all tools', () => {
